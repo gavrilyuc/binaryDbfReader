@@ -36,7 +36,13 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ColumnAttribute.cs" />
+    <Compile Include="Attributes\IgnoreAttribute.cs" />
+    <Compile Include="Attributes\TableAttribute.cs" />
     <Compile Include="BinaryDbfStreamReader.cs" />
+    <Compile Include="Context\DbfContext.cs" />
+    <Compile Include="Context\IContextReader.cs" />
+    <Compile Include="Context\IDbfContextReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

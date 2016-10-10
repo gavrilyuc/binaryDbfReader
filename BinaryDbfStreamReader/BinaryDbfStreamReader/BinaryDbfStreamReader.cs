@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -46,6 +47,7 @@ namespace System.IO.DbfStream
         /// Максимальное кол-во рядков в файле
         /// </summary>
         public int MaxRows => _header.CountRecords;
+
         /// <summary>
         /// Текущая позиция каретки чтения
         /// </summary>
@@ -61,12 +63,7 @@ namespace System.IO.DbfStream
                 
                 if (_position < 0 || _position >= _header.CountRecords) return;
 
-                // ReSharper disable once HeuristicUnreachableCode
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                if (_binaryFile.BaseStream == null) return;
-
-                _binaryFile.BaseStream.Seek(
-                    _header.HeaderSize + _position * _header.RowSize, SeekOrigin.Begin);
+                _binaryFile.BaseStream.Seek(_header.HeaderSize + _position * _header.RowSize, SeekOrigin.Begin);
             }
         }
 
@@ -80,7 +77,8 @@ namespace System.IO.DbfStream
         /// <summary>ctor</summary>
         public BinaryDbfStreamReader(Encoding enc) : this()
         {
-            if (enc != null) Encoding = enc;
+            if (enc != null)
+                Encoding = enc;
         }
         
         /// <summary>
@@ -109,6 +107,7 @@ namespace System.IO.DbfStream
 
             _binaryFile.BaseStream.Seek(_header.HeaderSize, SeekOrigin.Begin);
         }
+
         /// <summary>
         /// Закрыть Поток чтения
         /// </summary>
@@ -118,42 +117,6 @@ namespace System.IO.DbfStream
             _columns = null;
             Encoding = null;
             Position = 0;
-        }
-
-        private const int EncodingByteCode = 29;
-        
-        /// <summary>
-        /// Изменить кодировку dbf файла (Атрибут кодировку, но не кодировку данных)
-        /// </summary>
-        /// <param name="pathDbf"></param>
-        /// <param name="to"></param>
-        public static void ChangeEncoding(string pathDbf, Encoding to)
-        {
-            byte encCode = 0;
-            if (EncodingByte.ContainsValue(to.CodePage))
-            {
-                encCode = EncodingByte.First(e => e.Value == to.CodePage).Key;
-            }
-
-            using (BinaryWriter wr = new BinaryWriter(File.OpenWrite(pathDbf)))
-            {
-                wr.Seek(29, SeekOrigin.Begin);
-                wr.Write(encCode);
-            }
-        }
-        
-        /// <summary>
-        /// Получить атрибут кодировки dbf файла
-        /// </summary>
-        /// <param name="dbfName"></param>
-        /// <returns></returns>
-        public static Encoding GetEncoding(string dbfName)
-        {
-            using (BinaryReader reader = new BinaryReader(File.OpenRead(dbfName)))
-            {
-                ((FileStream)reader.BaseStream).Seek(EncodingByteCode, SeekOrigin.Begin);
-                return GetEncoding(reader.ReadByte());
-            }
         }
 
         /// <summary>
@@ -301,7 +264,7 @@ namespace System.IO.DbfStream
         }
 
         /// <summary>
-        /// registered encodings in dbf...
+        /// все зарегистрированые кодировки dbf.
         /// </summary>
         private static readonly Dictionary<byte, int> EncodingByte = new Dictionary<byte, int> {
             { 1, 437 }, { 2, 850 }, { 3, 1252 }, { 4, 10000 }, { 100, 852 },
@@ -314,10 +277,10 @@ namespace System.IO.DbfStream
         };
         private static Encoding GetEncoding(byte xorCode)
         {
-            if (EncodingByte.ContainsKey(xorCode))
-                return Encoding.GetEncoding(EncodingByte[xorCode]);
-
-            return Encoding.GetEncoding(EncodingByte[38]);// iso-8859-1 is default dbf encoding
+            return
+                Encoding.GetEncoding(EncodingByte.ContainsKey(xorCode)
+                    ? EncodingByte[xorCode] : EncodingByte[38]);
+                    // iso-8859-1 is default dbf encoding
         }
         #endregion
     }
