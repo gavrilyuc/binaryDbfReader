@@ -1,2 +1,2 @@
-# binaryDbfReader
-Bynary Dbf Stream Reader
+# Bynary Dbf Stream Reader
+Бинарное чтение файлов формата DBF.
